@@ -1,14 +1,35 @@
 package controllers;
 
-import play.*;
-import play.mvc.*;
-
-import views.html.*;
+import models.Task;
+import play.data.Form;
+import play.mvc.Controller;
+import play.mvc.Result;
 
 public class Application extends Controller {
-  
-  public static Result index() {
-    return ok(index.render("Your new application is ready."));
-  }
-  
+
+	public static Result index() {
+		return redirect(routes.Application.tasks());
+	}
+
+	public static Result tasks() {
+		return ok(views.html.index.render(Task.all(), taskForm));
+	}
+
+	public static Result newTask() {
+		final Form<Task> filledForm = taskForm.bindFromRequest();
+		if (filledForm.hasErrors()) {
+			return badRequest(views.html.index.render(Task.all(), filledForm));
+		} else {
+			Task.create(filledForm.get());
+			return redirect(routes.Application.tasks());
+		}
+	}
+
+	public static Result deleteTask(final Long id) {
+		Task.delete(id);
+		return redirect(routes.Application.tasks());
+	}
+
+	static Form<Task> taskForm = form(Task.class);
+
 }
